@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DSE 中文科 — 詞性攻略指南 (Demo)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Minimal reset for the demo */
+      body { background: #f5f5f4; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- React + ReactDOM UMD -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel standalone for in-browser JSX transpile (dev/demo only) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+// 小型 icon 替代：使用 emoji 做占位（便於 CDN-free demo）
+const BookOpen = ({className}) => <span className={className}>📘</span>;
+const Type = ({className}) => <span className={className}>🔤</span>;
+const Eye = ({className}) => <span className={className}>👁️</span>;
+const EyeOff = ({className}) => <span className={className}>🚫</span>;
+const Menu = ({className}) => <span className={className}>≡</span>;
+const X = ({className}) => <span className={className}>✖</span>;
+const ChevronDown = ({className}) => <span className={className}>▾</span>;
+const ChevronUp = ({className}) => <span className={className}>▴</span>;
+const Brain = ({className}) => <span className={className}>🧠</span>;
+const CheckCircle = ({className}) => <span className={className}>✔️</span>;
+const XCircle = ({className}) => <span className={className}>✖️</span>;
+const RefreshCcw = ({className}) => <span className={className}>🔄</span>;
+const Star = ({className}) => <span className={className}>⭐</span>;
+const FileText = ({className}) => <span className={className}>📄</span>;
+const Activity = ({className}) => <span className={className}>⚡</span>;
+const HelpCircle = ({className, size}) => <span className={className}>❓</span>;
+const Zap = ({className}) => <span className={className}>⚡</span>;
+const User = ({className}) => <span className={className}>👤</span>;
+const Hash = ({className}) => <span className={className}>#</span>;
+const LinkIcon = ({className}) => <span className={className}>🔗</span>;
+const MessageCircle = ({className}) => <span className={className}>💬</span>;
+const Mic = ({className}) => <span className={className}>🎤</span>;
+const ArrowRight = ({className}) => <span className={className}>➡️</span>;
+
+// 以下為使用者提供的主要 React 元件（已簡化 icon 依賴）
+const THEORY_DATA = [
+  { id: 'noun', type: 'content', title: '名詞 (Nouns)', color: 'bg-blue-300', icon: <BookOpen className="w-8 h-8" />, definition: '表示人、事物、時間、處所等名稱的詞。', categories: [ { name: '人物名詞', examples: '魯迅、父親、作家' }, { name: '事物名詞', examples: '國家、樹木 (具體)；思想、文化 (抽象)' }, { name: '處所名詞', examples: '香港、北京、附近、周圍' }, { name: '時間名詞', examples: '今年、早晨、現在、剛才' }, { name: '方位名詞', examples: '上、下、左、右、前、後' }, ], features: [ '主要充當主語、賓語。', '受數量詞修飾 (如：一個人)。', '一般不受副詞 (不/很) 修飾 (方位詞除外)。', ] },
+  { id: 'verb', type: 'content', title: '動詞 (Verbs)', color: 'bg-red-300', icon: <Activity className="w-8 h-8" />, definition: '表示人或事物的動作、行為、心理活動或變化等。', categories: [ { name: '動作行為', examples: '說、笑、跑、學習、保衛' }, { name: '心理活動', examples: '愛、恨、怕、討厭、希望' }, { name: '發展變化', examples: '增加、發展、擴大、提高' }, { name: '存在/消失', examples: '有、無、在、存在、發生' }, { name: '判斷', examples: '是' }, ], features: [ '主要充當謂語。', '受副詞「不」、「沒」修飾。', '多數可以帶賓語 (及物動詞)。', ] },
+  { id: 'adj', type: 'content', title: '形容詞 (Adjectives)', color: 'bg-yellow-300', icon: <Star className="w-8 h-8" />, definition: '表示事物的形狀、性質、狀態等。', categories: [ { name: '性質', examples: '好、壞、大、小、高、低' }, { name: '狀態', examples: '雪白、通紅、冰涼' }, ], features: [ '主要充當謂語、定語。', '一般受副詞「不」、「很」修飾。', '部分可以重疊 (如：清清楚楚)。', ] },
+  { id: 'adv', type: 'content', title: '副詞 (Adverbs)', color: 'bg-orange-300', icon: <Zap className="w-8 h-8" />, definition: '用來修飾、限制動詞或形容詞，表示程度、範圍、時間等。', categories: [ { name: '程度副詞', examples: '很、太、非常、十分' }, { name: '範圍副詞', examples: '都、全、只、光' }, { name: '時間副詞', examples: '已經、曾經、將要、立刻' }, { name: '否定副詞', examples: '不、沒、別' }, ], features: [ '主要充當狀語，修飾謂語。', '不能單獨成句。', '一般不能受程度副詞修飾（如不能說「很已經」）。' ] },
+  { id: 'pronoun', type: 'content', title: '代詞 (Pronouns)', color: 'bg-teal-300', icon: <User className="w-8 h-8" />, definition: '具有代替、指示作用的詞。', categories: [ { name: '人稱代詞', examples: '我、你、他、我們、大家' }, { name: '指示代詞', examples: '這、那、這裡、那裡' }, { name: '疑問代詞', examples: '誰、甚麼、哪裡、怎麼' }, ], features: [ '可代替名詞、動詞、形容詞、數量詞等。', '語法功能與所代替的詞相同。' ] },
+  { id: 'num_quant', type: 'content', title: '數詞與量詞 (Num/Quant)', color: 'bg-indigo-300', icon: <Hash className="w-8 h-8" />, definition: '數詞表示數目和次序；量詞表示計算單位。', categories: [ { name: '基數詞', examples: '一、二、百、萬' }, { name: '序數詞', examples: '第一、初五' }, { name: '名量詞', examples: '個、隻、張、本 (修飾事物)' }, { name: '動量詞', examples: '次、回、趟、遍 (修飾動作)' }, ], features: [ '數詞和量詞常結合成「數量短語」（如：三個人、去一次）。', '量詞重疊表示「每一」的意思（如：個個、條條）。' ] },
+  { id: 'prep', type: 'function', title: '介詞 (Prepositions)', color: 'bg-pink-300', icon: <ArrowRight className="w-8 h-8" />, definition: '用在名詞或代詞前面，引進動作的對象、時間、處所等。', categories: [ { name: '引進對象', examples: '把、被、對、對於、關於' }, { name: '引進處所/時間', examples: '在、從、向、往、當' }, { name: '引進方式/依據', examples: '按、按照、根據、通過' }, ], features: [ '不能單獨充當句子成分。', '必須組成「介詞短語」修飾動詞或形容詞。', '不能重疊。' ] },
+  { id: 'conj', type: 'function', title: '連詞 (Conjunctions)', color: 'bg-purple-300', icon: <LinkIcon className="w-8 h-8" />, definition: '連接詞、短語或句子，表示某種邏輯關係。', categories: [ { name: '並列關係', examples: '和、跟、與、而且' }, { name: '選擇關係', examples: '或者、還是' }, { name: '轉折關係', examples: '雖然、但是、不過' }, { name: '因果關係', examples: '因為、所以、既然' }, ], features: [ '只有連接作用，不起修飾或補充作用。', '位置比較固定。' ] },
+  { id: 'particle', type: 'function', title: '助詞 (Particles)', color: 'bg-lime-300', icon: <MessageCircle className="w-8 h-8" />, definition: '附著在詞、短語或句子後面，表示結構關係或動態等。', categories: [ { name: '結構助詞', examples: '的 (修飾名詞)、地 (修飾動詞)、得 (補語)' }, { name: '動態助詞', examples: '著 (進行)、了 (完成)、過 (經歷)' }, { name: '語氣助詞', examples: '嗎、呢、吧、啊 (通常在句末)' }, ], features: [ '讀輕聲。', '沒有實際意義，只表語法功能。', '位置固定，不能移動。' ] },
+  { id: 'interj', type: 'function', title: '嘆詞與擬聲詞', color: 'bg-cyan-300', icon: <Mic className="w-8 h-8" />, definition: '表示感嘆、呼喚應答或摹擬聲音的詞。', categories: [ { name: '嘆詞', examples: '唉、啊、哎呀、哼 (表各類情感)' }, { name: '擬聲詞', examples: '哈哈、汪汪、淅瀝、轟隆' }, ], features: [ '獨立性強，通常不與其他詞組合。', '可獨立成句。' ] },
+];
+
+const WORD_PAIRS_DATA = [
+  { id: 1, wordA: '光明', posA: '名詞', wordB: '光亮', posB: '形容詞', explanation: '光明：指亮光(N)或正義的(Adj)，此處對比通常作名詞用(如：前途光明)；光亮：明亮(Adj)。' },
+  { id: 2, wordA: '精神', posA: '名詞', wordB: '精緻', posB: '形容詞', explanation: '精神：指意識/宗旨(N)；精緻：精巧細緻(Adj)。' },
+  { id: 3, wordA: '粉碎', posA: '形容詞', wordB: '打碎', posB: '動詞', explanation: '粉碎：碎得像粉一樣(Adj/V)；打碎：進行打的動作致碎(V)。' },
+  { id: 4, wordA: '說明', posA: '動詞', wordB: '說明書', posB: '名詞', explanation: '說明：解釋清楚(V)；說明書：介紹物品的文件(N)。' },
+  { id: 5, wordA: '著作', posA: '名詞', wordB: '著名', posB: '形容詞', explanation: '著作：作品(N)；著名：有名(Adj)。' },
+  { id: 6, wordA: '用功', posA: '形容詞', wordB: '用意', posB: '名詞', explanation: '用功：努力學習(Adj)；用意：意圖/企圖(N)。' },
+  { id: 7, wordA: '表面', posA: '名詞', wordB: '表示', posB: '動詞', explanation: '表面：物體跟外界接觸的部分(N)；表示：顯出思想感情(V)。' },
+  { id: 8, wordA: '便利', posA: '形容詞', wordB: '便利店', posB: '名詞', explanation: '便利：方便(Adj)；便利店：商店名稱(N)。' },
+];
+
+const SENTENCE_DATA = [
+  { id: 1, text: "各__種文體各有__其特點，各有不同的作用。", targets: [ { word: "各", answer: "代詞", explain: "指代上述的每一種。" }, { word: "有", answer: "動詞", explain: "表示存在或擁有。" } ] },
+  { id: 2, text: "這__個__道理難道你還不清楚嗎__？", targets: [ { word: "這", answer: "代詞", explain: "指示代詞，指近處的事物。" }, { word: "個", answer: "量詞", explain: "名量詞，修飾道理。" }, { word: "嗎", answer: "助詞", explain: "語氣助詞，表示疑問。" } ] },
+  { id: 3, text: "明天如果下雨，運動會__只好延期舉行__。", targets: [ { word: "運動會", answer: "名詞", explain: "活動名稱，作主語。" }, { word: "舉行", answer: "動詞", explain: "進行活動，作謂語。" } ] },
+  { id: 4, text: "好了__，不要老說這些事了__！", targets: [ { word: "了", answer: "助詞", explain: "語氣助詞，表示感嘆或變化。" }, { word: "了", answer: "助詞", explain: "語氣助詞，表示動作完成或變化。" } ] },
+  { id: 5, text: "李瓊的字寫得__很好，得__了一等獎。", targets: [ { word: "得", answer: "助詞", explain: "結構助詞，連接補語(很好)。" }, { word: "得", answer: "動詞", explain: "得到，獲得。" } ] },
+  { id: 6, text: "我們要嚴肅__校紀，嚴格執行__學校的規章制度。", targets: [ { word: "嚴肅", answer: "形容詞", explain: "莊重、令人敬畏(這裏活用為動詞：使嚴肅)。但若按基礎詞性，嚴肅為形容詞。" }, { word: "執行", answer: "動詞", explain: "實施，實行。" } ] }
+];
+
+const QUIZ_DATA = [
+  { id: 1, question: "分辨詞性：「光明」與「光亮」", options: ["名詞 / 形容詞", "形容詞 / 動詞", "動詞 / 名詞", "副詞 / 形容詞"], correctIndex: 0, explanation: "「光明」常作名詞(如：走向光明)或形容詞(光明磊落)，「光亮」側重於狀態(形容詞)。根據課本答案，光明為名詞，光亮為形容詞。" },
+  { id: 2, question: "分辨詞性：「說明」與「說明書」", options: ["動詞 / 動詞", "名詞 / 動詞", "動詞 / 名詞", "形容詞 / 名詞"], correctIndex: 2, explanation: "「說明」是動作，解釋清楚(動詞)；「說明書」是物件名稱(名詞)。" },
+  { id: 3, question: "句子分析：「這」個道理難道你還不清楚嗎？", options: ["名詞", "形容詞", "代詞", "量詞"], correctIndex: 2, explanation: "「這」是指示代詞，用來指代比較近的人或事物。" },
+  { id: 4, question: "句子分析：李瓊的字寫「得」很好，得了一等獎。", options: ["動詞", "助詞", "形容詞", "副詞"], correctIndex: 1, explanation: "第一個「得」用在動詞「寫」後，引出補語「很好」，是結構助詞。" },
+  { id: 5, question: "句子分析：明天如果下雨，運動會只好延期「舉行」。", options: ["名詞", "動詞", "形容詞", "介詞"], correctIndex: 1, explanation: "「舉行」表示進行某種活動，是動詞。" }
+];
+
+// --- 小型 UI 元件（簡化） ---
+const NeuButton = ({ children, onClick, className = "", active = false, disabled = false }) => (
+  <button onClick={onClick} disabled={disabled} className={`px-4 py-2 font-bold text-black border-4 border-black transition-all ${!disabled ? 'active:translate-x-1 active:translate-y-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5' : 'opacity-50 cursor-not-allowed border-gray-400 bg-gray-200'} ${active ? 'bg-black text-white' : 'bg-white'} ${className}` }>{children}</button>
+);
+
+const NeuCard = ({ title, children, color = "bg-white", className = "" }) => (
+  <div className={`border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 mb-8 ${color} ${className}`}>
+    {title && <h3 className="text-2xl font-black mb-4 border-b-4 border-black pb-2 uppercase tracking-wide">{title}</h3>}
+    <div className="font-medium text-black">{children}</div>
+  </div>
+);
+
+const AccordionItem = ({ title, children, isOpen, onClick, color }) => (
+  <div className="mb-4">
+    <button onClick={onClick} className={`w-full text-left p-4 border-4 border-black flex justify-between items-center font-bold text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${color}`}>
+      {title}
+      {isOpen ? <ChevronUp className="w-6 h-6 border-2 border-black rounded-full bg-white" /> : <ChevronDown className="w-6 h-6" />}
+    </button>
+    {isOpen && (<div className="border-x-4 border-b-4 border-black p-4 bg-white font-medium">{children}</div>)}
+  </div>
+);
+
+const InteractiveWordPair = ({ pair, revealed, onToggle }) => {
+  const [guessA, setGuessA] = React.useState(null);
+  const [guessB, setGuessB] = React.useState(null);
+  const [showExplanation, setShowExplanation] = React.useState(false);
+  const checkGuess = (wordType, guess) => {
+    const correct = wordType === 'A' ? pair.posA : pair.posB;
+    const isCorrect = guess === correct;
+    if (wordType === 'A') setGuessA(isCorrect ? 'correct' : 'wrong'); else setGuessB(isCorrect ? 'correct' : 'wrong');
+  };
+  const reset = (e) => { e.stopPropagation(); setGuessA(null); setGuessB(null); setShowExplanation(false); onToggle(); };
+  if (!revealed) return (
+    <div onClick={onToggle} className="relative cursor-pointer border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all bg-yellow-100 hover:bg-yellow-200">
+      <div className="p-4 border-b-4 border-black flex justify-between items-center">
+        <div className="font-black text-xl">{pair.id}. {pair.wordA} <span className="text-gray-400 mx-2">vs</span> {pair.wordB}</div>
+        <div className="bg-black text-white px-2 py-1 text-xs font-bold rounded">點擊挑戰</div>
+      </div>
+      <div className="p-8 flex justify-center items-center"><div className="animate-bounce text-6xl font-black text-gray-400">?</div></div>
+    </div>
+  );
+  return (
+    <div className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white relative animate-fade-in translate-x-1 translate-y-1">
+      <div className="bg-black text-white p-2 px-4 flex justify-between items-center">
+        <span className="font-bold">詞義辨析 #{pair.id}</span>
+        <button onClick={reset} className="text-sm underline">收起</button>
+      </div>
+      <div className="p-6 grid gap-6">
+        <div className={`p-4 border-2 border-black rounded ${guessA === 'correct' ? 'bg-green-100' : 'bg-gray-50'}`}>
+          <div className="flex justify-between items-center mb-3"><span className="text-2xl font-black text-blue-800">{pair.wordA}</span>{guessA === 'correct' && <CheckCircle className="text-green-600" />}{guessA === 'wrong' && <XCircle className="text-red-500" />}</div>
+          {guessA !== 'correct' ? (<div className="flex flex-wrap gap-2">{['名詞','動詞','形容詞'].map(opt => (<button key={opt} onClick={() => checkGuess('A', opt)} className="px-3 py-1 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:translate-y-0.5 hover:shadow-none font-bold text-sm">{opt}</button>))}</div>) : (<div className="font-black text-xl">{pair.posA}</div>)}
+        </div>
+        <div className={`p-4 border-2 border-black rounded ${guessB === 'correct' ? 'bg-green-100' : 'bg-gray-50'}`}>
+          <div className="flex justify-between items-center mb-3"><span className="text-2xl font-black text-pink-800">{pair.wordB}</span>{guessB === 'correct' && <CheckCircle className="text-green-600" />}{guessB === 'wrong' && <XCircle className="text-red-500" />}</div>
+          {guessB !== 'correct' ? (<div className="flex flex-wrap gap-2">{['名詞','動詞','形容詞'].map(opt => (<button key={opt} onClick={() => checkGuess('B', opt)} className="px-3 py-1 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:translate-y-0.5 hover:shadow-none font-bold text-sm">{opt}</button>))}</div>) : (<div className="font-black text-xl">{pair.posB}</div>)}
+        </div>
+        {(guessA === 'correct' && guessB === 'correct') || showExplanation ? (
+          <div className="animate-fade-in bg-yellow-50 p-4 border-2 border-black border-dashed"><h4 className="font-bold mb-2 bg-black text-white inline-block px-2">詳解：</h4><p className="leading-relaxed">{pair.explanation}</p></div>
+        ) : (<button onClick={() => setShowExplanation(true)} className="w-full text-center text-gray-400 font-bold hover:text-black mt-2">跳過並查看解釋</button>)}
+      </div>
+    </div>
+  );
+};
+
+const InteractiveSentence = ({ item }) => {
+  const [revealedIndices, setRevealedIndices] = React.useState({});
+  const [showAll, setShowAll] = React.useState(false);
+  const toggleReveal = (idx) => setRevealedIndices(prev=>({...prev,[idx]:!prev[idx]}));
+  return (
+    <div className="border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+      <div className="bg-green-100 border-b-4 border-black p-4 flex justify-between items-center"><span className="font-black text-2xl">句式 #{item.id}</span><button onClick={()=>setShowAll(!showAll)} className="bg-black text-white px-4 py-1 font-bold hover:bg-gray-800 transition text-sm">{showAll? '隱藏所有解析':'一鍵顯示全解'}</button></div>
+      <div className="p-6">
+        <div className="font-serif mb-6 leading-loose bg-gray-50 p-6 border-2 border-gray-200 rounded text-justify">{item.text.split('__').map((part, index)=> (<React.Fragment key={index}>{part}{index < item.targets.length && (<span className="relative inline-block mx-2 align-middle">{!revealedIndices[index] && !showAll ? (<button onClick={()=>toggleReveal(index)} className="animate-pulse bg-blue-100 border-b-4 border-black px-3 py-0 hover:bg-blue-200 transition-colors font-bold text-blue-800 flex items-center gap-1">{item.targets[index].word} <HelpCircle size={16} /></button>) : (<span className="bg-yellow-200 border-2 border-black px-2 py-1 rounded font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] animate-fade-in inline-flex flex-col items-center leading-none"><span className="text-xs mb-1 text-gray-600">({item.targets[index].answer})</span><span>{item.targets[index].word}</span></span> )}</span>)}</React.Fragment>))}</div>
+        <div className="space-y-2">{item.targets.map((t, idx)=>{const isRevealed = revealedIndices[idx] || showAll; if (!isRevealed) return null; return (<div key={idx} className="animate-fade-in flex items-start gap-3 bg-white p-3 border-2 border-black border-dotted"><div className="bg-black text-white w-6 h-6 flex items-center justify-center font-bold rounded-full shrink-0 text-sm">{idx+1}</div><div><span className="font-bold text-lg mr-2 text-blue-700">{t.answer}</span><span className="">{t.explain}</span></div></div>)})}</div>
+      </div>
+    </div>
+  );
+};
+
+function DSEChineseGuide(){
+  const [fontSize,setFontSize]=React.useState(24);
+  const [showHighlights,setShowHighlights]=React.useState(true);
+  const [sidebarOpen,setSidebarOpen]=React.useState(true);
+  const [activeSection,setActiveSection]=React.useState('intro');
+  const [theoryType,setTheoryType]=React.useState('content');
+  const [openAccordions,setOpenAccordions]=React.useState({});
+  const [revealedPairs,setRevealedPairs]=React.useState({});
+  const [quizAnswers,setQuizAnswers]=React.useState({});
+  const [quizSubmitted,setQuizSubmitted]=React.useState({});
+  const toggleAccordion = (id)=> setOpenAccordions(prev=>({...prev,[id]:!prev[id]}));
+  const togglePairReveal=(id)=> setRevealedPairs(prev=>({...prev,[id]:!prev[id]}));
+  const handleQuizSelect=(qId,optIdx)=>{ if (quizSubmitted[qId]) return; setQuizAnswers(prev=>({...prev,[qId]:optIdx})); };
+  const submitQuizQuestion=(qId)=> setQuizSubmitted(prev=>({...prev,[qId]:true}));
+  const resetQuiz=()=>{ setQuizAnswers({}); setQuizSubmitted({}); };
+  const contentStyle = { fontSize: `${fontSize}px`, lineHeight: '1.6' };
+  const highlightClass = showHighlights ? "bg-yellow-300 px-1 mx-0.5 rounded border-2 border-black border-dashed" : "";
+  return (
+    <div className="flex min-h-screen bg-stone-100 font-sans text-gray-900 overflow-hidden">
+      <button onClick={()=>setSidebarOpen(!sidebarOpen)} className="fixed top-4 left-4 z-50 p-2 bg-black text-white border-2 border-white rounded-md md:hidden shadow-[4px_4px_0px_0px_#fff]">{sidebarOpen ? <X /> : <Menu />}</button>
+      <aside className={`fixed top-0 left-0 h-full bg-white border-r-4 border-black z-40 transition-transform duration-300 ease-in-out w-80 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6">
+          <div className="mb-8 text-center border-b-4 border-black pb-4"><h1 className="text-3xl font-black tracking-tighter uppercase bg-yellow-300 inline-block px-2 border-2 border-black transform -rotate-2">DSE 中文科</h1><p className="mt-2 font-bold text-sm">詞性攻略指南</p></div>
+          <div className="mb-8 space-y-6">
+            <div className="p-4 bg-blue-100 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <label className="flex items-center gap-2 font-bold mb-2 text-sm"><Type size={18} /> 字體大小: {fontSize}px</label>
+              <input type="range" min="18" max="48" value={fontSize} onChange={(e)=>setFontSize(parseInt(e.target.value))} className="w-full accent-black h-4 bg-white border-2 border-black appearance-none rounded-full cursor-pointer" />
+            </div>
+            <button onClick={()=>setShowHighlights(!showHighlights)} className={`w-full flex items-center justify-center gap-2 p-3 font-bold border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${showHighlights ? 'bg-pink-300' : 'bg-gray-200'}`}>
+              {showHighlights ? <Eye size={20}/> : <EyeOff size={20}/>} {showHighlights ? '隱藏重點' : '顯示重點'}
+            </button>
+          </div>
+          <nav className="space-y-3">{[{ id: 'intro', label: '1. 實詞與虛詞', icon: <BookOpen size={20}/> },{ id: 'pairs', label: '2. 詞義辨析 (A/B組)', icon: <Brain size={20}/> },{ id: 'sentences', label: '3. 句式判斷', icon: <FileText size={20}/> },{ id: 'quiz', label: '4. 互動練習場', icon: <Star size={20}/> },].map(item=> (<button key={item.id} onClick={()=>setActiveSection(item.id)} className={`w-full flex items-center gap-3 p-3 font-bold border-4 border-black transition-all hover:translate-x-1 ${activeSection === item.id ? 'bg-green-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:bg-green-100'}`}>{item.icon}{item.label}</button>))}</nav>
+        </div>
+      </aside>
+      <main className={`flex-1 p-6 md:p-12 transition-all duration-300 overflow-y-auto bg-stone-100 min-h-screen ${sidebarOpen ? 'md:ml-80' : 'ml-0'}`} style={contentStyle}>
+        <div className="max-w-4xl mx-auto space-y-12 pb-24">
+          {activeSection === 'intro' && (<section className="animate-fade-in"><div className="mb-8 border-l-8 border-black pl-6"><h2 className="text-4xl font-black mb-2">第一章：實詞與虛詞</h2><p className="text-xl font-bold text-gray-600">掌握基礎，方能百戰百勝！</p></div>
+          <div className="flex gap-4 mb-8"><button onClick={()=>setTheoryType('content')} className={`flex-1 py-4 font-black text-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${theoryType === 'content' ? 'bg-blue-300 translate-y-1 shadow-none' : 'bg-white hover:-translate-y-1'}`}>實詞篇 (Content)</button><button onClick={()=>setTheoryType('function')} className={`flex-1 py-4 font-black text-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${theoryType === 'function' ? 'bg-pink-300 translate-y-1 shadow-none' : 'bg-white hover:-translate-y-1'}`}>虛詞篇 (Function)</button></div>
+          <div className="grid grid-cols-1 gap-6">{THEORY_DATA.filter(item=>item.type===theoryType).map(item => (<AccordionItem key={item.id} title={item.title} isOpen={openAccordions[item.id]} onClick={()=>toggleAccordion(item.id)} color={item.color}><div className="space-y-4"><div className="flex items-start gap-4"><div className="hidden md:block p-2 bg-black text-white rounded-lg shrink-0">{item.icon}</div><div><p className="font-bold border-b-2 border-black pb-2 inline-block text-lg mb-2">定義</p><p className="text-lg leading-relaxed">{item.definition}</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"><div className="bg-white border-2 border-black p-4 rounded shadow-[4px_4px_0px_0px_#ddd]"><h4 className="font-black mb-2 bg-black text-white inline-block px-2 transform -rotate-1">分類例子</h4><ul className="list-disc list-inside space-y-2">{item.categories.map((cat,idx)=>(<li key={idx}><span className={highlightClass}>{cat.name}</span>：<span className="text-gray-700">{cat.examples}</span></li>))}</ul></div><div className="bg-white border-2 border-black p-4 rounded shadow-[4px_4px_0px_0px_#ddd]"><h4 className="font-black mb-2 bg-black text-white inline-block px-2 transform rotate-1">語法特點</h4><ul className="list-decimal list-inside space-y-2">{item.features.map((feat,idx)=>(<li key={idx} className={idx%2===0?"bg-gray-50 p-1 rounded":"p-1"}>{feat}</li>))}</ul></div></div></div></AccordionItem>))}</div></section>)}
+          {activeSection==='pairs' && (<section className="animate-fade-in"><div className="mb-8 border-l-8 border-black pl-6"><div className="flex items-center gap-4 mb-2"><h2 className="text-4xl font-black">第二章：詞義辨析</h2><span className="bg-black text-white text-sm font-bold px-3 py-1 rounded-full transform rotate-3">A組 & B組 通用</span></div><p className="text-xl font-bold text-gray-600">點擊卡片挑戰判斷詞性！</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6">{WORD_PAIRS_DATA.map(pair=>(<InteractiveWordPair key={pair.id} pair={pair} revealed={revealedPairs[pair.id]} onToggle={()=>togglePairReveal(pair.id)} />))}</div></section>)}
+          {activeSection==='sentences' && (<section className="animate-fade-in"><div className="mb-8 border-l-8 border-black pl-6"><div className="flex items-center gap-4 mb-2"><h2 className="text-4xl font-black">第三章：句式判斷</h2><span className="bg-black text-white text-sm font-bold px-3 py-1 rounded-full transform -rotate-2">A組 & B組 通用</span></div><p className="text-xl font-bold text-gray-600">點擊句子中的關鍵詞 (?) 來查看答案。</p></div><div className="space-y-8">{SENTENCE_DATA.map(item=>(<InteractiveSentence key={item.id} item={item} />))}</div></section>)}
+          {activeSection==='quiz' && (<section className="animate-fade-in"><div className="mb-8 border-l-8 border-black pl-6 flex justify-between items-end"><div><h2 className="text-4xl font-black mb-2">第四章：練習場</h2><p className="text-xl font-bold text-gray-600">實戰測試，不論對錯皆有詳解。</p></div><NeuButton onClick={resetQuiz} className="bg-red-300"><RefreshCcw className="inline mr-2" size={18}/> 重置練習</NeuButton></div><div className="space-y-12">{QUIZ_DATA.map((q,index)=>{const isSubmitted=quizSubmitted[q.id]; const userAns=quizAnswers[q.id]; const isCorrect=userAns===q.correctIndex; return (<div key={q.id} className="relative"><div className="absolute -left-4 -top-4 bg-black text-white w-12 h-12 flex items-center justify-center font-black text-2xl border-4 border-white shadow-lg z-10">{index+1}</div><div className={`border-4 border-black bg-white p-8 pt-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${isSubmitted ? (isCorrect ? 'border-green-600' : 'border-red-500') : ''}`}><h3 className="text-2xl font-bold mb-6 pl-4">{q.question}</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">{q.options.map((opt,optIdx)=>(<button key={optIdx} onClick={()=>handleQuizSelect(q.id,optIdx)} disabled={isSubmitted} className={`p-4 text-left font-bold border-4 transition-all ${userAns===optIdx ? 'bg-black text-white border-black translate-x-1 translate-y-1 shadow-none' : 'bg-white border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'} ${isSubmitted && optIdx===q.correctIndex ? 'bg-green-500 text-white border-green-700' : ''} ${isSubmitted && userAns===optIdx && !isCorrect ? 'bg-red-500 text-white border-red-700' : ''} disabled:cursor-not-allowed` }><span className="mr-2">{String.fromCharCode(65+optIdx)}.</span> {opt}</button>))}</div>{!isSubmitted && (<div className="flex justify-end"><NeuButton onClick={()=>submitQuizQuestion(q.id)} className="bg-green-300 w-full md:w-auto" disabled={userAns===undefined}>提交答案</NeuButton></div>)}{isSubmitted && (<div className={`mt-6 p-6 border-4 border-black animate-fade-in ${isCorrect ? 'bg-green-100' : 'bg-red-100'}`}><div className="flex items-center gap-2 font-black text-xl mb-2">{isCorrect ? <CheckCircle className="text-green-600"/> : <XCircle className="text-red-600"/>}{isCorrect ? '答對了！' : '答錯了，加油！'}</div><p className="font-bold">正確答案：{String.fromCharCode(65+q.correctIndex)}</p><div className="mt-3 pt-3 border-t-2 border-black border-dashed"><p className="font-medium"><span className="bg-black text-white px-2 py-0.5 text-sm mr-2">詳解</span> {q.explanation}</p></div></div>)}</div></div>);})}</div></section>)}
+        </div>
+      </main>
+      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }`}</style>
+    </div>
+  );
+}
+
+// Render
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<DSEChineseGuide />);
+
+    </script>
+  </body>
+</html>
